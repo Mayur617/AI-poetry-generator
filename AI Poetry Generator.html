@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Poem Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #4a4a4a;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        textarea, select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        select {
+            height: 45px;
+        }
+        
+        button {
+            background-color: #6c63ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #5a52d5;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6c63ff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .poem {
+            white-space: pre-wrap;
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            line-height: 1.8;
+            padding: 20px;
+            border-left: 4px solid #6c63ff;
+            background-color: #f9f9f9;
+        }
+        
+        .error {
+            color: #d9534f;
+            margin-top: 20px;
+            display: none;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 4px;
+        }
+        
+        .api-key-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            border-left: 4px solid #1e90ff;
+        }
+        
+        .toggle-api-info {
+            background: none;
+            border: none;
+            color: #1e90ff;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            text-decoration: underline;
+            margin-top: 10px;
+        }
+        
+        .api-info {
+            margin-top: 10px;
+            display: none;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI Poem Generator</h1>
+        <div class="subtitle">Transform your ideas into beautiful poetry with AI</div>
+    </header>
+    
+    <main class="container">
+        <div class="api-key-section">
+            <label for="api-key">Hugging Face API Token:</label>
+            <input type="password" id="api-key" placeholder="Enter your Hugging Face API token">
+            <button class="toggle-api-info" id="toggle-api-info">How to get a free API token?</button>
+            <div class="api-info" id="api-info">
+                <p>To get a free Hugging Face API token:</p>
+                <ol>
+                    <li>Go to <a href="https://huggingface.co/join" target="_blank">huggingface.co/join</a> and create a free account</li>
+                    <li>After logging in, visit <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a></li>
+                    <li>Click "New token", give it a name, and select "Read" access</li>
+                    <li>Copy the generated token and paste it here</li>
+                </ol>
+                <p>Your API token is stored locally in your browser and is never sent to our servers.</p>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="prompt">What would you like a poem about?</label>
+            <textarea id="prompt" rows="4" placeholder="Enter a topic, theme, or specific details for your poem..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="style">Poetry Style</label>
+            <select id="style">
+                <option value="free verse">Free Verse</option>
+                <option value="sonnet">Sonnet</option>
+                <option value="haiku">Haiku</option>
+                <option value="limerick">Limerick</option>
+                <option value="acrostic">Acrostic</option>
+                <option value="narrative">Narrative</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="mood">Mood</label>
+            <select id="mood">
+                <option value="any">Any</option>
+                <option value="joyful">Joyful</option>
+                <option value="melancholic">Melancholic</option>
+                <option value="romantic">Romantic</option>
+                <option value="mysterious">Mysterious</option>
+                <option value="inspirational">Inspirational</option>
+            </select>
+        </div>
+        
+        <button id="generate-btn">Generate Poem</button>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Creating your poem with AI...</p>
+        </div>
+        
+        <div id="error" class="error"></div>
+        
+        <div id="result" class="result">
+            <h2>Your AI-Generated Poem</h2>
+            <div id="poem" class="poem"></div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>© 2025 AI Poem Generator | Using Hugging Face API for poem generation</p>
+    </footer>
+    
+    <script>
+        // DOM elements
+        const apiKeyInput = document.getElementById('api-key');
+        const toggleApiInfoBtn = document.getElementById('toggle-api-info');
+        const apiInfoDiv = document.getElementById('api-info');
+        const promptInput = document.getElementById('prompt');
+        const styleSelect = document.getElementById('style');
+        const moodSelect = document.getElementById('mood');
+        const generateBtn = document.getElementById('generate-btn');
+        const loadingDiv = document.getElementById('loading');
+        const resultDiv = document.getElementById('result');
+        const poemDiv = document.getElementById('poem');
+        const errorDiv = document.getElementById('error');
+
+        // Check for saved API key in local storage
+        const savedApiKey = localStorage.getItem('hf-api-key');
+        if (savedApiKey) {
+            apiKeyInput.value = savedApiKey;
+        }
+
+        // Toggle API info visibility
+        toggleApiInfoBtn.addEventListener('click', () => {
+            if (apiInfoDiv.style.display === 'block') {
+                apiInfoDiv.style.display = 'none';
+                toggleApiInfoBtn.textContent = 'How to get a free API token?';
+            } else {
+                apiInfoDiv.style.display = 'block';
+                toggleApiInfoBtn.textContent = 'Hide information';
+            }
+        });
+
+        // Save API key to local storage when it changes
+        apiKeyInput.addEventListener('change', () => {
+            if (apiKeyInput.value) {
+                localStorage.setItem('hf-api-key', apiKeyInput.value);
+            } else {
+                localStorage.removeItem('hf-api-key');
+            }
+        });
+
+        // Event listener for generate button
+        generateBtn.addEventListener('click', generatePoem);
+
+        // Generate poem function
+        async function generatePoem() {
+            const apiKey = apiKeyInput.value.trim();
+            const prompt = promptInput.value.trim();
+            const style = styleSelect.value;
+            const mood = moodSelect.value !== 'any' ? moodSelect.value : '';
+            
+            // Basic validation
+            if (!apiKey) {
+                showError("Please enter a Hugging Face API token.");
+                return;
+            }
+            
+            if (!prompt) {
+                showError("Please enter a prompt for your poem.");
+                return;
+            }
+            
+            // Show loading state
+            generateBtn.disabled = true;
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const poem = await generatePoemWithAI(apiKey, prompt, style, mood);
+                
+                // Display the poem
+                poemDiv.textContent = poem;
+                resultDiv.style.display = 'block';
+                
+                // Scroll to result
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error('Error generating poem:', error);
+                showError("Sorry, there was an error generating your poem. Please check your API token and try again.");
+            } finally {
+                // Hide loading state
+                generateBtn.disabled = false;
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Function to generate poem using Hugging Face API
+        async function generatePoemWithAI(apiKey, prompt, style, mood) {
+            // Craft a more specific prompt for the AI model
+            let fullPrompt = `Write a ${style} poem`;
+            
+            if (mood) {
+                fullPrompt += ` with a ${mood} mood`;
+            }
+            
+            fullPrompt += ` about ${prompt}. The poem should be well-structured and creative.`;
+            
+            // Special handling for specific styles
+            if (style === 'haiku') {
+                fullPrompt += " Remember that a haiku has three lines with 5, 7, and 5 syllables respectively.";
+            } else if (style === 'sonnet') {
+                fullPrompt += " A traditional sonnet has 14 lines.";
+            } else if (style === 'limerick') {
+                fullPrompt += " A limerick is a humorous five-line poem with an AABBA rhyme scheme.";
+            } else if (style === 'acrostic') {
+                const acrosticWord = prompt.split(' ')[0].toUpperCase();
+                fullPrompt += ` Make it an acrostic poem using the word "${acrosticWord}" where each line starts with the letters of this word.`;
+            }
+            
+            // The API endpoint for Hugging Face Inference API
+            const apiUrl = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
+            
+            // Prepare the payload
+            const payload = {
+                inputs: fullPrompt,
+                parameters: {
+                    max_new_tokens: 250,
+                    temperature: 0.7,
+                    top_p: 0.95,
+                    do_sample: true
+                }
+            };
+
+            // Make the API request
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`API request failed: ${response.status} ${errorText}`);
+            }
+
+            const result = await response.json();
+            
+            // Extract the generated text from the response
+            let generatedText = '';
+            if (result && result[0] && result[0].generated_text) {
+                generatedText = result[0].generated_text;
+                
+                // Clean up the output to extract just the poem
+                // This depends on the output format of the specific model
+                // For Mistral, we need to extract the response part
+                const promptPart = fullPrompt;
+                const responsePart = generatedText.replace(promptPart, '').trim();
+                
+                // Further clean up to extract just the poem
+                // Try to find where the poem starts and ends
+                const lines = responsePart.split('\n');
+                let poemLines = [];
+                let inPoem = false;
+                
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    
+                    // Skip common model output prefixes
+                    if (trimmedLine.startsWith('[') || 
+                        trimmedLine.startsWith('Here') || 
+                        trimmedLine.startsWith('I hope') ||
+                        trimmedLine.includes('poem about')) {
+                        continue;
+                    }
+                    
+                    // If we find an empty line after collecting some poem, we might be at the end
+                    if (trimmedLine === '' && poemLines.length > 0) {
+                        inPoem = false;
+                    }
+                    
+                    // Otherwise, this is likely part of the poem
+                    if (trimmedLine !== '' || inPoem) {
+                        inPoem = true;
+                        poemLines.push(line);
+                    }
+                }
+                
+                return poemLines.join('\n');
+            }
+            
+            throw new Error("Unable to parse poem from API response");
+        }
+
+        // Show error message
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Fallback function in case the API fails
+        function generateFallbackPoem(prompt, style, mood) {
+            // Simplified fallback logic similar to the original demo
+            const samplePoems = {
+                "free verse": "Thoughts wander like clouds\nUnbound by rigid structure\nFree to express the essence of " + prompt + "\n\nWords flow naturally\nLike water finding its path\nThrough the landscape of emotions",
+                "sonnet": "With pen in hand, I seek to now convey\nThe beauty found in " + prompt + " so divine\nIn fourteen lines, emotions I display\nWith measured words in careful, metered line\n\nThrough metaphors and symbols I express\nThe depth of feeling words can scarcely hold\nA sonnet's form both challenges and bless\nAs stories of the heart are gently told",
+                "haiku": "Simple " + prompt + " sight\nNature's wisdom revealed now\nMoment's pure delight",
+                "limerick": "There once was a " + prompt + " so fine\nWhose qualities truly did shine\nWith spirit so bright\nIt gave such delight\nIts essence truly divine!",
+                "acrostic": prompt.split(' ')[0].split('').map(letter => 
+                    `${letter.toUpperCase()} is for the ${getRandomWord()} that ${getRandomVerb()} with grace`
+                ).join('\n'),
+                "narrative": "Once upon a time, there was " + prompt + "\nA story waiting to be told\nThrough verses crafted with care\nReveal the journey that unfolds\n\nCharacters move through scenes of life\nFacing challenges, finding joy\nThe narrative builds with each line\nLeading readers through emotions true"
+            };
+            
+            return samplePoems[style] || samplePoems["free verse"];
+        }
+
+        function getRandomWord() {
+            const words = ['beauty', 'wonder', 'magic', 'mystery', 'journey', 'passion', 'rhythm', 'harmony'];
+            return words[Math.floor(Math.random() * words.length)];
+        }
+
+        function getRandomVerb() {
+            const verbs = ['flows', 'dances', 'sings', 'speaks', 'moves', 'shines', 'resonates', 'whispers'];
+            return verbs[Math.floor(Math.random() * verbs.length)];
+        }
+    </script>
+</body>
+</html>
