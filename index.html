@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Poem Generator</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+  <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+  <style>
+    body {
+      background-color: whitesmoke;
+      text-align: center;
+      font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+    }
+
+    .container {
+      margin: 120px auto;
+      max-width: 600px;
+      box-shadow: 0px 20px 60px rgba(65, 50, 100, 0.08);
+      background-color: #efd8a4;
+      padding: 40px;
+      border-radius: 30px;
+    }
+
+    header {
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-weight: 800;
+      font-size: 36px;
+      line-height: 1.5;
+      color: #46444a;
+    }
+
+    .form-container {
+      padding: 30px;
+      background-color: #80826ccb;
+      border-radius: 10px;
+      box-shadow: 0px 20px 60px rgba(65, 50, 100, 0.08);
+      text-align: left;
+    }
+
+    form {
+      display: flex;
+    }
+
+    .example {
+      text-align: left;
+      line-height: 1.5;
+      font-size: 12px;
+      margin-top: 5px;
+      margin-left: 20px;
+      opacity: 0.5;
+    }
+
+    .instructions {
+      padding: 16px;
+      border: 1px solid #46444a;
+      width: 80%;
+      font-size: 16px;
+      border-radius: 30px;
+      line-height: 20px;
+      color: #46444a;
+    }
+
+    .submit-button {
+      margin-left: 10px;
+      background-color: #ea6b38;
+      color: #46444a;
+      font-size: 18px;
+      border: 1px solid #46444a;
+      border-radius: 60px;
+      padding: 15px 25px;
+      width: 150px;
+    }
+
+    .poem {
+      font-size: 14px;
+      background-color: #b7b88cc7;
+      padding: 20px;
+      line-height: 2;
+      border-left: 3px solid #46444a;
+      border-right: 3px solid #46444a;
+      box-shadow: 0px 20px 60px rgba(65, 50, 100, 0.08);
+      border-radius: 10px;
+      margin-top: 30px;
+      color: #46444a;
+      text-align: left;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 13px;
+      margin-top: 30px;
+      color: #46444a;
+    }
+
+    a {
+      color: #ea6b38;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    @-webkit-keyframes blink-animation {
+      to {
+        visibility: hidden;
+      }
+    }
+
+    .generating {
+      animation: blink-animation 1s steps(5, start) infinite;
+    }
+  </style>
+  
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>AI Poem Generator</h1>
+    </header>
+
+    <main>
+      <div class="form-container">
+        <form id="poem-generator">
+          <input type="text" placeholder="Please enter the topic of the poem" autofocus required class="instructions"
+            id="user-instructions" />
+          <input type="submit" value="submit" class="submit-button" />
+        </form>
+        <small class="example">i.e: Love, Paris, Toast.</small>
+      </div>
+      <div class="poem hidden blink" id="poem"></div>
+    </main>
+
+  </div>
+  
+  <script>
+    let poemFormElement = document.querySelector("#poem-generator");
+//display generated poem
+function displayPoem(response) {
+  new Typewriter("#poem", {
+    strings: response.data.answer,
+    autoStart: true,
+    delay: 1,
+    cursor: " ",
+  });
+}
+
+function generatePoem(event) {
+  event.preventDefault();
+
+  let instructionInput = document.querySelector("#user-instructions");
+  //build API URL
+  let apiKey = "48faoe8ab18e23t93c002654f81bbf6e";
+  let prompt = `User instructions: Generate a poem in English about ${instructionInput.value}`;
+  let context =
+    "You are a romantic poet AI assistant, your purpose is to write short 4 line poems. The poems should be written in basic HTML and separate each line of the poem with a <br/>. Make sure to follow the user instructions and only include the poem, the user should not see any HTML elements. Please sign the poem with <strong>SheCodes AI</strong>";
+  let apiURL = `https://api.shecodes.io/ai/v1/generate?prompt=${prompt}&context=${context}&key=${apiKey}`;
+
+  let poemElement = document.querySelector("#poem");
+  poemElement.classList.remove("hidden");
+  poemElement.innerHTML = `<span class="generating">Generating a poem for you about ${instructionInput.value}...</span>`;
+
+  //call to API
+  axios.get(apiURL).then(displayPoem);
+}
+
+poemFormElement.addEventListener("submit", generatePoem);
+
+  </script>
+</body>
+
+</html>
