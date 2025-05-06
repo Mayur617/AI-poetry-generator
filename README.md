@@ -1,127 +1,174 @@
 # AI Poem Generator
 
-## Overview
-The **AI Poem Generator** leverages the Hugging Face API to generate creative poems based on user-provided themes, styles, and moods. It allows users to input prompts for poems and select different styles and moods for their generated poetry. This application is designed to be easy to use and does not require advanced technical knowledge.
-
 ## Table of Contents
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [Features](#features)
-- [Architecture](#architecture)
-- [API Documentation](#api-documentation)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
+
+1. [Project Overview](#project-overview)
+2. [Key Features](#key-features)
+3. [Prerequisites](#prerequisites)
+4. [Installation & Setup](#installation--setup)
+5. [Configuration](#configuration)
+6. [Usage Guide](#usage-guide)
+7. [Code Walkthrough](#code-walkthrough)
+
+   * [HTML Structure](#html-structure)
+   * [CSS Styling](#css-styling)
+   * [JavaScript Logic](#javascript-logic)
+8. [Error Handling & Edge Cases](#error-handling--edge-cases)
+9. [Security Considerations](#security-considerations)
+10. [Accessibility & UX Enhancements](#accessibility--ux-enhancements)
+11. [Extending & Customization](#extending--customization)
+12. [Architecture Diagram](#architecture-diagram)
+13. [Contributing](#contributing)
+14. [License](#license)
+15. [Acknowledgments](#acknowledgments)
+
+---
+
+## Project Overview
+
+The **AI Poem Generator** is a client-side web app that transforms simple user prompts into short, four-line romantic poems using the SheCodes AI Poem Generation API. With a dynamic typewriter animation effect, users enjoy an engaging experience as verses gently appear on screen. This tool is ideal for creative writers, social media enthusiasts, or anyone seeking poetic inspiration in seconds.
+
+## Key Features
+
+* **Prompt-Based Generation**: Enter any topic (e.g., "Sunset", "Paris") to receive a 4-line poem.
+* **Typewriter Animation**: Character-by-character reveal for dramatic flair.
+* **HTML Formatting**: Lines separated by `<br/>` and signed with **SheCodes AI**.
+* **No Backend Required**: Entirely front-end; just open `index.html`.
+* **Customizable**: Easily tweak styling, animation speed, or poem length.
 
 ## Prerequisites
-To run this project, ensure you have the following:
-- **Operating System**: Any system that can run modern web browsers (Windows, macOS, Linux).
-- **Web Browser**: Chrome, Firefox, Safari, or any up-to-date browser.
-- **API Token**: You will need a Hugging Face API token to generate poems using their model. Visit [Hugging Face](https://huggingface.co/) to get one.
 
-## Installation
-To get started with the AI Poem Generator:
+* **Web Browser**: Latest versions of Chrome, Firefox, Edge, or Safari.
+* **Internet Connection**: To reach the SheCodes AI endpoint.
+* **SheCodes AI API Key**: Obtainable from your SheCodes dashboard.
 
-1. Clone the repository:
+## Installation & Setup
+
+1. **Clone the repository**
+
    ```bash
    git clone https://github.com/username/ai-poem-generator.git
    cd ai-poem-generator
    ```
 
-2. Open `index.html` in your web browser. No server-side installation is required; the app is entirely front-end based.
+2. **Open in browser**
+
+   * Simply double-click `index.html` or launch it via your preferred browser.
+
+That’s it—no dependencies or package managers required!
 
 ## Configuration
-1. **API Key**: The Hugging Face API token is required to generate poems. Enter your token in the provided input field on the webpage.
-   
-2. **Configuration Files**: There are no specific configuration files required. The project operates purely on front-end JavaScript.
 
-## Usage
-To generate a poem:
+1. In the `index.html` file, locate the `<script>` block near the bottom.
+2. Replace the placeholder key:
 
-1. Open the **AI Poem Generator** webpage.
-2. Enter a **Hugging Face API Token** in the provided field.
-3. Enter a **prompt** for the poem (e.g., a theme or specific details).
-4. Choose the **Poetry Style** (e.g., Free Verse, Sonnet, Haiku, etc.).
-5. Select the **Mood** of the poem (e.g., Joyful, Romantic, Melancholic, etc.).
-6. Click the **Generate Poem** button.
+   ```js
+   let apiKey = "YOUR_SHECODES_API_KEY";
+   ```
+3. Save and refresh the page.
 
-The AI will generate a poem based on your input, and it will be displayed on the page once ready.
+## Usage Guide
 
-Example code for use (though the project works through a web interface, here's an outline for the backend request):
-```javascript
-const poem = generatePoemWithAI(apiKey, prompt, style, mood);
-console.log(poem);
+1. **Enter Topic**: Click on the input box and type your theme (e.g., "Love").
+2. **Submit**: Hit the **Submit** button or press Enter.
+3. **Watch**: A “Generating…” message appears, then the poem unfolds in a typewriter effect.
+4. **Enjoy**: Each poem ends with a signature: **SheCodes AI**.
+
+## Code Walkthrough
+
+### HTML Structure
+
+* **`<input id="user-instructions">`**: Captures the poem topic.
+* **`<form id="poem-generator">`**: Wraps the input and submit button.
+* **`<div id="poem">`**: Container for rendered poem text.
+
+```html
+<form id="poem-generator">
+  <input id="user-instructions" ... />
+  <input type="submit" value="Submit" />
+</form>
+<div id="poem" class="hidden"></div>
 ```
 
-## Features
-- **Poetry Styles**: Multiple styles including Free Verse, Sonnet, Haiku, Limerick, Acrostic, and Narrative.
-- **Customizable Moods**: Choose a mood for your poem to tailor the tone (e.g., Joyful, Melancholic, etc.).
-- **Hugging Face API Integration**: Uses Hugging Face's Inference API for powerful AI-generated poetry.
+### CSS Styling
 
-## Architecture
-The project consists of the following components:
+* **Container**: Centered with soft shadows and pastel background.
+* **Typewriter Blink**: Custom keyframes for blinking cursor effect.
+* **Responsive**: Fluid widths up to 600px for readability on mobile.
 
-1. **Frontend (HTML/CSS/JS)**: The entire user interface is built using HTML, CSS, and JavaScript.
-2. **API Integration**: The Hugging Face Inference API is used to generate the poems based on user input.
+```css
+.container { max-width: 600px; margin: auto; padding: 40px; }
+.poem { font-size: 14px; padding: 20px; }
+@keyframes blink { 50% { opacity: 0; }}
+```
 
-+------------------------+
-|     Frontend (UI)      |
-+------------------------+
-           |
-           v
-+------------------------+
-| Hugging Face API       |
-| (Poetry Generation)    |
-+------------------------+
+### JavaScript Logic
 
-## API Documentation
-### Endpoint: /models/mistralai/Mistral-7B-Instruct-v0.2
-- **Method**: POST
-- **Parameters**:
-  - `inputs` (required): The prompt for the poem.
-  - `parameters` (optional):
-    - `max_new_tokens`: Maximum number of tokens in the generated poem (default: 250).
-    - `temperature`: Sampling temperature for randomness (default: 0.7).
-    - `top_p`: Top-p (nucleus) sampling (default: 0.95).
-    - `do_sample`: Whether to sample randomly (default: true).
+1. **Event Listener**: Triggers `generatePoem` on form submission.
+2. **API URL Builder**: Combines user prompt and static context.
+3. **Loading State**: Shows a “Generating…” message.
+4. **Axios Request**: `axios.get(apiURL).then(displayPoem)`
+5. **Typewriter Display**: Feeds response into `Typewriter` instance.
 
-**Example Request**:
-```json
-{
-    "inputs": "Write a sonnet about love",
-    "parameters": {
-        "max_new_tokens": 250,
-        "temperature": 0.7,
-        "top_p": 0.95,
-        "do_sample": true
-    }
+```js
+function generatePoem(event) {
+  event.preventDefault();
+  const topic = document.querySelector('#user-instructions').value;
+  const apiURL = `https://api.shecodes.io/ai/v1/generate?prompt=Generate a poem in English about ${topic}&context=${context}&key=${apiKey}`;
+  poemElement.innerHTML = 'Generating...';
+  axios.get(apiURL)
+    .then(response => displayPoem(response))
+    .catch(handleError);
 }
 ```
 
-## Troubleshooting
-Common issues and their solutions:
+## Error Handling & Edge Cases
 
-### Problem: Invalid API Key
-*Symptom*: "Error: Invalid API Key" appears when trying to generate a poem.
-*Solution*: Ensure your Hugging Face API key is correctly entered. You can retrieve it from [Hugging Face Token Settings](https://huggingface.co/settings/tokens).
+* **Network Errors**: Caught via `.catch()`, user is shown a friendly retry message.
+* **Empty Input**: Form `required` attribute prevents submission.
+* **API Failure**: Check HTTP status codes and display specific alerts (e.g., 401 for invalid key).
 
-### Problem: Empty Poem or No Response
-*Symptom*: The poem is not generated.
-*Solution*: Check if the API key is valid and if your network connection is stable. Also, ensure the prompt is correctly entered.
+## Security Considerations
+
+* **API Key Exposure**: Front-end keys can be viewed—consider migrating the call to a server-side proxy.
+* **Content Sanitization**: Trusted AI endpoint, but for other APIs, sanitize HTML output.
+* **CORS**: Ensure your key and endpoint support cross-origin requests.
+
+## Accessibility & UX Enhancements
+
+* **Aria Labels**: Add `aria-label="Poem topic"` to input for screen readers.
+* **Focus Management**: Auto-focus input on page load; return focus to input after poem.
+* **Dark Mode Toggle**: Easily add a switch to invert colors.
+
+## Extending & Customization
+
+* **Poem Length**: Modify context string to request more/fewer lines.
+* **Animation Timing**: Adjust `delay` parameter of `Typewriter`.
+* **Themes & Styles**: Add dropdowns for different poetic forms (Haiku, Limerick).
+* **Backend Proxy**: Build a simple Node.js or Flask service to hide the API key.
+
+## Architecture Diagram
+
+```
+[User Browser] ---(HTTP GET)---> [SheCodes AI API]
+        ^                                   |
+        |-----------(Poem Response)--------|
+```
 
 ## Contributing
-To contribute to this project:
 
-1. Fork the repository.
-2. Create a new feature branch.
-3. Make your changes.
-4. Commit your changes.
-5. Push to the branch.
-6. Submit a pull request.
+1. Fork this repo.
+2. Create a branch: `git checkout -b feature/awesome`
+3. Commit your changes: `git commit -m "Add awesome feature"`
+4. Push to GitHub: `git push origin feature/awesome`
+5. Open a Pull Request.
 
 ## License
+
 This project is licensed under the [MIT License](LICENSE).
 
----
+## Acknowledgments
+
+* [SheCodes](https://shecodes.io/) for the AI endpoint.
+* [Typewriter Effect](https://github.com/tameemsafi/typewriterjs) for the animation library.
+* Frontend design inspired by minimalistic UI patterns.
